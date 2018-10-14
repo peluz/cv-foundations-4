@@ -16,9 +16,9 @@ def load_dataset():
     train_image = cv2.imread(TRAIN_IMAGE_PATH)
     dev_image = cv2.imread(DEV_IMAGE_PATH)
     test_image = cv2.imread(TEST_IMAGE_PATH)
-    train_label = cv2.imread(TRAIN_LABEL_PATH)
-    dev_label = cv2.imread(DEV_LABEL_PATH)
-    test_label = cv2.imread(TEST_LABEL_PATH)
+    train_label = cv2.imread(TRAIN_LABEL_PATH, 0).reshape(5000, 5000, 1)
+    dev_label = cv2.imread(DEV_LABEL_PATH, 0).reshape(5000, 5000, 1)
+    test_label = cv2.imread(TEST_LABEL_PATH, 0).reshape(5000, 5000, 1)
 
     X_train = sample_image(train_image, IMAGE_SIZE)
     X_dev = sample_image(dev_image, IMAGE_SIZE)
@@ -31,7 +31,6 @@ def load_dataset():
     Y_train[Y_train == 255] = 1
     Y_dev[Y_dev == 255] = 1
     Y_test[Y_test == 255] = 1
-    print(Y_dev.shape)
 
     return X_train, Y_train, X_dev, Y_dev, X_test, Y_test
 
@@ -39,3 +38,5 @@ def load_dataset():
 def sample_image(image, image_size):
     samples = [image[row:row+image_size, col:col+image_size, :] for row in range(0, 5000 - image_size + 1, image_size) for col in range(0, 5000 - image_size + 1, image_size)]
     return np.stack(samples, axis=0)
+
+load_dataset()
