@@ -34,9 +34,10 @@ deeplab_model.compile(loss='binary_crossentropy',
 tensorboard = TensorBoard(log_dir=MODEL_DIR,
                           batch_size=BATCH_SIZE, update_freq="batch")
 saver = ModelCheckpoint("{}/model.hdf5".format(MODEL_DIR), verbose=1,
-                        save_best_only=True)
-stopper = EarlyStopping(patience=20, verbose=1)
-reduce_lr = ReduceLROnPlateau(factor=0.5, patience=5, verbose=1, min_lr=0.001)
+                        save_best_only=True, monitor="val_acc")
+stopper = EarlyStopping(monitor="val_acc", patience=20, verbose=1)
+reduce_lr = ReduceLROnPlateau(monitor="train_loss", factor=0.5,
+                              patience=5, verbose=1, min_lr=0.001)
 
 deeplab_model.fit(X_train, Y_train, batch_size=BATCH_SIZE, verbose=2,
                   validation_data=(X_dev, Y_dev),
