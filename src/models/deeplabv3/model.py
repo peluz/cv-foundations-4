@@ -516,7 +516,10 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
             weights_path = get_file('deeplabv3_mobilenetv2_tf_dim_ordering_tf_kernels.h5',
                                     WEIGHTS_PATH_MOBILE,
                                     cache_subdir='models')
+        print("Using pretrained weights")
         model.load_weights(weights_path, by_name=True)
+    else:
+        print("Using random weights")
     return model
 
 
