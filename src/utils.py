@@ -3,6 +3,7 @@ import cv2
 import os
 import matplotlib.pyplot as plt
 import random
+from keras import backend as K
 
 DIRNAME = os.path.dirname(__file__)
 TRAIN_IMAGE_PATH = os.path.join(DIRNAME, "../data/images/vienna16.tif")
@@ -14,7 +15,7 @@ TEST_LABEL_PATH = os.path.join(DIRNAME, "../data/gt/vienna22.tif")
 IMAGE_SIZE = 200
 
 
-def load_dataset():
+def load_dataset(image_size=IMAGE_SIZE):
     train_image = cv2.imread(TRAIN_IMAGE_PATH)
     dev_image = cv2.imread(DEV_IMAGE_PATH)
     test_image = cv2.imread(TEST_IMAGE_PATH)
@@ -71,3 +72,10 @@ def baseline():
     print(Y_train.sum()/5000/5000)
     print(Y_dev.sum()/5000/5000)
     print(Y_test.sum()/5000/5000)
+
+
+def jacard_coef(y_true, y_pred):
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (intersection + 1.0) / (K.sum(y_true_f) + K.sum(y_pred_f) - intersection + 1.0)
