@@ -1,9 +1,6 @@
 import argparse
 from train import train
-from utils import load_dataset
-
-IMAGE_SIZE = 200
-
+from utils import load_dataset, load_model
 
 parser = argparse.ArgumentParser(
     description="Image Segmentation")
@@ -21,20 +18,26 @@ parser.add_argument("--freeze", action="store_true",
                     default=False)
 parser.add_argument("--randomInit", help="Não usar pesos pretreinados",
                     action="store_true", default=False)
+parser.add_argument("--train", help="Treinar modelo",
+                    action="store_true", default=False)
 parser.add_argument("--model", help="Nome do modelo a ser salvo/carregado",
                     type=str, default="test")
 
 
-def main(r1, r2, image_size, batch_size, freeze, pretrained, model):
+def main(r1, r2, train_model, image_size,
+         batch_size, freeze, pretrained, model):
     X_train, Y_train, X_dev, Y_dev, X_test, Y_test = load_dataset(image_size)
     if r1:
         pass
     elif r2:
-        return train(X_train, Y_train, X_dev, Y_dev, batch_size=batch_size,
-                     freeze=freeze, pretrained=pretrained, model=model)
+        if train_model:
+            train(X_train, Y_train, X_dev, Y_dev, batch_size=batch_size,
+                  freeze=freeze, pretrained=pretrained, model=model)
+        model = load_model(model)
+        model.evaluate(X_test, Y_test, batch_size)
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    main(args.r1, args.r2, args.ImageSize, args.batchSize,
+    main(args.r1, args.r2, args.train, args.ImageSize, args.batchSize,
          args.freeze, not args.randomInit, args.model)

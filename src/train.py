@@ -26,8 +26,6 @@ def train(X_train, Y_train, X_dev, Y_dev, batch_size=4,
     if freeze:
         for layer in deeplab_model.layers[:147]:
             layer.trainable = False
-        for index, layer in enumerate(deeplab_model.layers):
-            print(index, layer, layer.trainable)
 
     optimizer = SGD(momentum=0.9, clipnorm=1.)
 
@@ -38,9 +36,9 @@ def train(X_train, Y_train, X_dev, Y_dev, batch_size=4,
     tensorboard = TensorBoard(log_dir=model_dir,
                               batch_size=batch_size, update_freq="batch")
     saver = ModelCheckpoint("{}/model.hdf5".format(model_dir), verbose=1,
-                            save_best_only=True, monitor="val_jacard_coef",
+                            save_best_only=True, monitor="val_acc",
                             mode="max")
-    stopper = EarlyStopping(patience=20, verbose=1, monitor="val_jacard_coef",
+    stopper = EarlyStopping(patience=50, verbose=1, monitor="val_acc",
                             mode="max")
     reduce_lr = ReduceLROnPlateau(monitor="loss", factor=0.5,
                                   patience=5, verbose=1, min_lr=0.001)
