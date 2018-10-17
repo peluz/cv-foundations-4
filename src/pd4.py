@@ -1,6 +1,6 @@
 import argparse
 from train import train
-from utils import load_dataset, load_model
+from utils import load_dataset, load
 
 parser = argparse.ArgumentParser(
     description="Image Segmentation")
@@ -33,11 +33,11 @@ def main(r1, r2, train_model, image_size,
         if train_model:
             train(X_train, Y_train, X_dev, Y_dev, batch_size=batch_size,
                   freeze=freeze, pretrained=pretrained, model=model)
-        model = load_model(model)
+        model = load(model)
         model.evaluate(X_test, Y_test, batch_size)
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    main(args.r1, args.r2, args.train, args.ImageSize, args.batchSize,
+    main(args.r1, args.r2, args.train, args.imageSize, args.batchSize,
          args.freeze, not args.randomInit, args.model)

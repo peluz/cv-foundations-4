@@ -2,13 +2,14 @@ import sys
 import os
 DIRNAME = os.path.dirname(__file__)
 sys.path.append(os.path.join(DIRNAME, "models/deeplabv3/"))
-model import relu6, BilinearUpsampling
+from model import relu6, BilinearUpsampling
 import numpy as np
 import cv2
 import os
 import matplotlib.pyplot as plt
 import random
 from keras import backend as K
+from keras.models import load_model
 
 DIRNAME = os.path.dirname(__file__)
 TRAIN_IMAGE_PATH = os.path.join(DIRNAME, "../data/images/vienna16.tif")
@@ -86,7 +87,8 @@ def jacard_coef(y_true, y_pred):
     return (intersection + 1.0) / (K.sum(y_true_f) + K.sum(y_pred_f) - intersection + 1.0)
 
 
-def load_model(model):
+def load(model):
     model_path = os.path.join(DIRNAME, "models/deeplabv3/results/{}/model.hdf5".format(model))
+    print("Loading {}".format(model_path))
     return load_model(model_path,
                       custom_objects={'relu6': relu6, 'BilinearUpsampling': BilinearUpsampling})
