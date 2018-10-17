@@ -34,7 +34,8 @@ def main(r1, r2, train_model, image_size,
             train(X_train, Y_train, X_dev, Y_dev, batch_size=batch_size,
                   freeze=freeze, pretrained=pretrained, model=model)
         model = load(model)
-        model.evaluate(X_test, Y_test, batch_size)
+        results = model.evaluate(X_test, Y_test, batch_size)
+        print(results)
 
 
 if __name__ == "__main__":

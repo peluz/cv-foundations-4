@@ -49,7 +49,7 @@ def sample_image(image, image_size):
 
 
 def show_dataset(image_size):
-    X_train, Y_train, X_dev, Y_dev, X_test, Y_test = load_dataset()
+    X_train, Y_train, X_dev, Y_dev, X_test, Y_test = load_dataset(imag)
     images = [random.randint(0, 5000*5000/image_size/image_size - 1) for _ in range(20)]
 
     show_grid(X_train[images], Y_train[images])
@@ -91,4 +91,5 @@ def load(model):
     model_path = os.path.join(DIRNAME, "models/deeplabv3/results/{}/model.hdf5".format(model))
     print("Loading {}".format(model_path))
     return load_model(model_path,
-                      custom_objects={'relu6': relu6, 'BilinearUpsampling': BilinearUpsampling})
+                      custom_objects={'relu6': relu6, 'BilinearUpsampling': BilinearUpsampling,
+                                      "jacard_coef": jacard_coef})

@@ -36,7 +36,7 @@ def train(X_train, Y_train, X_dev, Y_dev, batch_size=4,
     tensorboard = TensorBoard(log_dir=model_dir,
                               batch_size=batch_size, update_freq="batch")
     saver = ModelCheckpoint("{}/model.hdf5".format(model_dir), verbose=1,
-                            save_best_only=True, monitor="val_acc",
+                            save_best_only=True, monitor="val_jacard_coef",
                             mode="max")
     stopper = EarlyStopping(patience=50, verbose=1, monitor="val_acc",
                             mode="max")
