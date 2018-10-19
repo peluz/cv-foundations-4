@@ -24,7 +24,7 @@ def glcm_mounter(image):
     list_histogram, image_histogram, glcm_dictionary = glcm_hist_dictionary(image)
     aux_shape = len(list_histogram)
 
-    matrix_glcm = np.zeros((aux_shape, aux_shape), dtype=np.float32)
+    matrix_glcm = np.zeros((aux_shape, aux_shape), dtype = np.float32)
 
     for n, i in zip(list_histogram, range(aux_shape)):
         for m, j in zip(list_histogram, range(aux_shape)):
