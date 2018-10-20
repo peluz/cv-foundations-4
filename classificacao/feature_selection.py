@@ -1,12 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Faço a relação de todas as features entre os três tipos de terreno #
-# 1 = Asfalto, primeiras 25 imagens #
-# 2 = Perigo, próximas 25 imagens #
-# 3 = Grama, próximas 25 imagens #
-# Com esses valores, seleciono o maior valor de cada terreno e identifico a característica em comum nas 3 relações, então a elimino #
-
 def feature_relation(features_array):
     for type in range(3):
         if type == 1:
