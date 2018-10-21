@@ -10,8 +10,7 @@ from keras import backend as K
 
 
 def train(X_train, Y_train, X_dev, Y_dev, batch_size=4,
-          freeze=False, pretrained=True, model="test",
-          aug=False, generator=None, n_epochs=100):
+          freeze=False, pretrained=True, model="test"):
 
     model_dir = os.path.join(DIRNAME, "models/deeplabv3/results/{}".format(model))
     os.makedirs(model_dir, exist_ok=True)
@@ -44,20 +43,8 @@ def train(X_train, Y_train, X_dev, Y_dev, batch_size=4,
     reduce_lr = ReduceLROnPlateau(monitor="loss", factor=0.5,
                                   patience=5, verbose=1, min_lr=0.001)
 
-    if aug:
-        if generator is None:
-            print("Necessário fornecer gerador de image augmentation")
-            return
-
-        deeplab_model.fit_generator(generator, verbose=2,
-                                    validation_data=(X_dev, Y_dev),
-                                    epochs=n_epochs,
-                                    callbacks=[tensorboard, saver, stopper, reduce_lr],
-                                    steps_per_epoch=X_train.shape[0] // batch_size,
-                                    validation_steps=X_dev.shape[0] // batch_size)
-    else:
-        deeplab_model.fit(X_train, Y_train, batch_size=batch_size, verbose=2,
-                          validation_data=(X_dev, Y_dev),
-                          epochs=n_epochs,
-                          callbacks=[tensorboard, saver, stopper, reduce_lr])
+    deeplab_model.fit(X_train, Y_train, batch_size=batch_size, verbose=2,
+                      validation_data=(X_dev, Y_dev),
+                      epochs=100,
+                      callbacks=[tensorboard, saver, stopper, reduce_lr])
     print("Modelo {} treinado!".format(model))

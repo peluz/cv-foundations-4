@@ -48,8 +48,17 @@ def sample_image(image, image_size):
     return np.stack(samples, axis=0)
 
 
+def form_mask(dataset, image_size):
+    img = np.ones((5000, 5000, 3))
+    for row in range(0, 5000 // image_size):
+        for col in range(0, 5000 // image_size):
+            img[row * image_size:(row + 1) * image_size, col * image_size:(col + 1) * image_size, :] = dataset[row * 5000 // image_size + col, :, :, :]
+    return img
+
+
+
 def show_dataset(image_size):
-    X_train, Y_train, X_dev, Y_dev, X_test, Y_test = load_dataset(imag)
+    X_train, Y_train, X_dev, Y_dev, X_test, Y_test = load_dataset(image_size)
     images = [random.randint(0, 5000*5000/image_size/image_size - 1) for _ in range(20)]
 
     show_grid(X_train[images], Y_train[images])

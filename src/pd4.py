@@ -1,7 +1,7 @@
 import argparse
 from train import train
-from utils import load_dataset, load
-from keras.preprocessing.image import ImageDataGenerator
+from utils import load_dataset, load, form_mask
+import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser(
     description="Image Segmentation")
@@ -23,40 +23,27 @@ parser.add_argument("--train", help="Treinar modelo",
                     action="store_true", default=False)
 parser.add_argument("--model", help="Nome do modelo a ser salvo/carregado",
                     type=str, default="test")
-parser.add_argument("--dataAug", help="Treinar com data agumentation",
-                    action="store_true", default=False)
 
 
 def main(r1, r2, train_model, image_size,
-         batch_size, freeze, pretrained, model, aug):
+         batch_size, freeze, pretrained, model):
     X_train, Y_train, X_dev, Y_dev, X_test, Y_test = load_dataset(image_size)
     if r1:
         pass
     elif r2:
         if train_model:
-            if aug:
-                datagen = ImageDataGenerator(
-                    featurewise_center=True,
-                    featurewise_std_normalization=True,
-                    rotation_range=90,
-                    horizontal_flip=True,
-                    vertical_flip=True)
-                datagen.fit(X_train)
-                train_generator = datagen.flow(X_train,
-                                               Y_train,
-                                               batch_size=batch_size)
-                train(X_train, Y_train, X_dev, Y_dev, batch_size=batch_size,
-                      freeze=freeze, pretrained=pretrained, model=model, aug=True,
-                      generator=train_generator)
-            else:
-                train(X_train, Y_train, X_dev, Y_dev, batch_size=batch_size,
-                      freeze=freeze, pretrained=pretrained, model=model)
+            train(X_train, Y_train, X_dev, Y_dev, batch_size=batch_size,
+                  freeze=freeze, pretrained=pretrained, model=model)
         model = load(model)
-        results = model.evaluate(X_test, Y_test, batch_size)
-        print(results)
+        loss, acc, iou = model.evaluate(X_test, Y_test, batch_size)
+        print("Loss:{}, Acc:{}, IoU:{}".format(loss, acc, iou))
+        mask = model.predict([X_test], batch_size=batch_size)
+        fullMask = form_mask(mask, image_size)
+        plt.imshow(fullMask)
+        plt.show()
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
     main(args.r1, args.r2, args.train, args.imageSize, args.batchSize,
-         args.freeze, not args.randomInit, args.model, args.dataAug)
+         args.freeze, not args.randomInit, args.model)
