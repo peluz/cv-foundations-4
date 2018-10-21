@@ -1,22 +1,27 @@
 from train import train
 from utils import load_dataset
+from keras.preprocessing.image import ImageDataGenerator
 
+size = 250
+batch = 4
 
-imageSizes = [500]
-small_batch = 4
-big_batch = 16
+datagen = ImageDataGenerator(
+    featurewise_center=True,
+    featurewise_std_normalization=True,
+    rotation_range=90,
+    horizontal_flip=True,
+    vertical_flip=True)
 
-for size in imageSizes:
-    if imageSizes == 500:
-        small_batch = 1
-        big_batch = 4
-    X_train, Y_train, X_dev, Y_dev, X_test, Y_test = load_dataset(size)
-    train(X_train, Y_train, X_dev, Y_dev, batch_size=small_batch,
-          freeze=False, pretrained=True,
-          model="pretrained-noFreeze-size{}-SGD".format(size))
-    train(X_train, Y_train, X_dev, Y_dev, batch_size=big_batch,
-          freeze=True, pretrained=True,
-          model="pretrained-Freeze-size{}-SGD".format(size))
-    train(X_train, Y_train, X_dev, Y_dev, batch_size=small_batch,
-          freeze=False, pretrained=False,
-          model="noPretrained-noFreeze-size{}-SGD".format(size))
+X_train, Y_train, X_dev, Y_dev, X_test, Y_test = load_dataset(size)
+
+datagen.fit(X_train)
+
+train_generator = datagen.flow(X_train,
+                               Y_train,
+                               batch_size=batch)
+
+train(X_train, Y_train, X_dev, Y_dev, batch_size=batch,
+      freeze=False, pretrained=True,
+      model="pretrained-noFreeze-size{}-SGD-Aug".format(size),
+      aug=True, generator=train_generator,
+      n_epochs=1000)
