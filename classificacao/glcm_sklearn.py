@@ -89,7 +89,7 @@ def main():
     knn = KNeighborsClassifier(n_neighbors=10)
     X_train = np.append(build_feat, n_build_feat)
     X_train = np.reshape(X_train, (X_train.shape[0]//len(features), len(features)))
-    knn.fit( X_train, np.repeat(np.arange(2),len(features))[:,np.newaxis] )
+    knn.fit( X_train, np.repeat(np.arange(2),1)[:,np.newaxis] )
     
 
     ################

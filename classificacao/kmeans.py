@@ -53,6 +53,7 @@ def main():
                 arr.append(img[h, w, 0])
                 arr.append(img[h, w, 1])
                 arr.append(img[h, w, 2])
+                
                 cnt_p += 1
 
     for h in range(height):
@@ -69,13 +70,21 @@ def main():
 
     hit = 0
     cnt = 0
+    tp = 0
+    fp = 0
+    fn = 0
     for i in out:
         if(i == 1 and cnt < cnt_p):
             hit += 1
+            tp += 1
         elif(i == 0 and cnt >= cnt_np):
             hit += 1
+        elif(i == 1 and cnt >= cnt_np):
+            fp += 1
+        elif(i == 0 and cnt < cnt_p):
+            fn += 1
         cnt += 1
-    print(hit/(cnt_p + cnt_np))
-
+    print("Accuracy: %f"%(hit/(cnt_p + cnt_np)))
+    print("IoU: %f"%(tp/(tp+fn+fp)))
 if __name__ == '__main__':
     main()
