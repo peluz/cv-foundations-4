@@ -86,55 +86,64 @@ def main():
     print(build_feat.shape)
     print(n_build_feat.shape)
     
-    knn = KNeighborsClassifier(n_neighbors=10)
+    knn = KNeighborsClassifier(algorithm='auto', leaf_size=30, metric='minkowski', metric_params=None, n_jobs=-1, n_neighbors=1, p=2, weights='uniform')
     X_train = np.append(build_feat, n_build_feat)
     X_train = np.reshape(X_train, (X_train.shape[0]//len(features), len(features)))
-    knn.fit( X_train, np.repeat(np.arange(2),1)[:,np.newaxis] )
-    
+    print(X_train)
+    print(X_train.shape)
+    knn.fit( X_train, np.repeat(np.arange(2),1) )
 
     ################
     # IMAGEM FINAL #
     ################
     img = cv.imread("data/vienna22.tif", 0)
     img_gt = cv.imread("data/gt/vienna22.tif", -1)
-    # arr = np.full((height+5, width+5), 20, dtype = np.uint8)
-    # arr[1:(width+1), 1:(height+1)] = img[0:width, 0:height] 
-    cnt = 0
 
     feat = []
     features = ['contrast', 'homogeneity']
+    cnt = 0
+    print("entrou")
+    for y in range(0, height, 25):
+        for x in range(0, width, 25):
+            arr = img[y:y+25, x:x+25]
+            glcm = greycomatrix(arr, [1,2,3,4], [0, np.pi/4, np.pi/2, 3*np.pi/4], 256, symmetric=True, normed=True)
+            for f in features:
+                feat.append(np.mean(greycoprops(glcm, f)))
+            cnt += 1
+    
+    print("saiu do for")
+    feat = np.array(feat)
+    feat = feat.reshape(cnt, 2)
+    feat = normalize(feat)
+    label = knn.predict(feat)
+    img_show = np.copy(img_gt)
     hit = 0
     cnt = 0
     tp = 0
     fp = 0
     fn = 0
-    img_show = np.copy(img_gt)
-    for y in range(0, height, 5):
-        for x in range(0, width, 5):
-            arr = img[y:y+5, x:x+5]
-            glcm = greycomatrix(arr, [1,2,3,4], [0, np.pi/4, np.pi/2, 3*np.pi/4], 256, symmetric=True, normed=True)
-            for f in features:
-                feat.append(np.mean(greycoprops(glcm, feat)))
-            print(feat)
-            feat = np.transpose(np.asarray(feat))    
-            np.random.shuffle(feat)
-            feat = normalize(feat)
-            y = knn.predict(feat)
-            feat.clear()  
-            for h in range(y, y+5):
-                for w in range(x, x+5):
-                    img_show[h,w] = y
+    cnt = 0
+    print("entrou no ultimo")
+    for y in range(0, height, 25):
+        for x in range(0, width, 25):
+            if(label[cnt] == 1):
+                img_show[y:y+25, x:x+25] = 0
+            else:
+                img_show[y:y+25, x:x+25] = 255
+            for h in range(y, y+25):
+                for w in range(x, x+25):
                     if(img_gt[h, w] == 255):
-                        if(y == 0): # É prédio e o knn previu como prédio
+                        if(label[cnt] == 0): # É prédio e o knn previu como prédio
                             hit += 1
                             tp += 1
-                        else: # Incorretamente preveu que não é um prédio
+                        else: # Incorretamente previu que não é um prédio
                             fn += 1
                     else:
-                        if(y == 0): # Incorretamente preveu que é um prédio
+                        if(label[cnt] == 0): # Incorretamente previu que é um prédio
                             fp += 1
                         else: # Não é prédio e previu que não é prédio mesmo
                             hit += 1
+            cnt += 1
 
     print("Accuracy: %f"%(hit/(height*width)))
     print("IoU: %f"%(tp/(tp+fn+fp)))
