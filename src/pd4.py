@@ -2,6 +2,7 @@ import argparse
 from train import train
 from utils import load_dataset, load, form_mask
 import matplotlib.pyplot as plt
+import cv2
 
 parser = argparse.ArgumentParser(
     description="Image Segmentation")
@@ -34,13 +35,14 @@ def main(r1, r2, train_model, image_size,
         if train_model:
             train(X_train, Y_train, X_dev, Y_dev, batch_size=batch_size,
                   freeze=freeze, pretrained=pretrained, model=model)
-        model = load(model)
-        loss, acc, iou = model.evaluate(X_test, Y_test, batch_size)
+        deeplab = load(model)
+        loss, acc, iou = deeplab.evaluate(X_test, Y_test, batch_size)
         print("Loss:{}, Acc:{}, IoU:{}".format(loss, acc, iou))
-        mask = model.predict([X_test], batch_size=batch_size)
+        mask = deeplab.predict([X_test], batch_size=batch_size)
         fullMask = form_mask(mask, image_size)
         plt.imshow(fullMask)
         plt.show()
+        cv2.imwrite('{}-pred.png'.format(model), fullMask*255)
 
 
 if __name__ == "__main__":
