@@ -1,21 +1,17 @@
 import cv2 as cv
-import itertools
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
 
 from skimage.feature import greycomatrix, greycoprops
 from sklearn.preprocessing import normalize
-from sklearn.model_selection import train_test_split
-from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import confusion_matrix, f1_score
 from sklearn import svm
 
 
 WINDOW_SIZE = 50
-NUM_PIXELS_BUILD = 387999
-NUM_PIXELS_NOT_BUILD = 491909
+NUM_PIXELS_BUILD = 387999 # cnt_p/83
+NUM_PIXELS_NOT_BUILD = 491909 # cnt_np/87
 FEATURES = ['contrast', 'homogeneity', 'energy']
 
 # 32203917/3 p
@@ -23,8 +19,8 @@ FEATURES = ['contrast', 'homogeneity', 'energy']
 # 32203917/387999 = 83
 # 42796083/491909 = 87
 # largura_altura(387999) (171, 2269)
-# largura_altura(387999*83) (4731, 6807)
-# (6501, 6583)
+# largura_altura(32203917) (4731, 6807)
+# largura_altura(42796083) (6501, 6583)
 # largura_altura(491909) (227, 2167)
 
 def largura_altura(pixels_predios):
@@ -38,6 +34,7 @@ def largura_altura(pixels_predios):
 def main():
     img = cv.imread("data/vienna16.tif", -1)
     img_gt = cv.imread("data/gt/vienna16.tif", -1)
+    # img = cv.cvtColor(img, cv.COLOR_RGB2YCrCb)
     a = datetime.datetime.now()
     height, width, channels = img.shape
     arr_p = []
@@ -70,7 +67,7 @@ def main():
         aux_p = np.reshape(aux_p, (alt_p, larg_p))
         glcm_p = greycomatrix(aux_p, [1], [0], 256, symmetric=True, normed=True)
         for feat in FEATURES:
-            build.append(np.mean(greycoprops(glcm_p, feat)))    
+            build.append(greycoprops(glcm_p, feat)[0,0])    
 
     for i in range(1,88):
         l = (i - 1)*NUM_PIXELS_NOT_BUILD
@@ -79,7 +76,7 @@ def main():
         aux_np = np.reshape(aux_np, (alt_np, larg_np))
         glcm_np = greycomatrix(aux_np, [1], [0], 256, symmetric=True, normed=True)
         for feat in FEATURES:
-            n_build.append(np.mean(greycoprops(glcm_np, feat)))
+            n_build.append(greycoprops(glcm_np, feat)[0,0])
 
     build = np.array(build)
     n_build = np.array(n_build)
@@ -105,19 +102,28 @@ def main():
     ################
     # IMAGEM FINAL #
     ################
-    img = cv.imread("data/vienna22.tif", 0)
+    img = cv.imread("data/vienna22.tif", -1)
+    # img = cv.cvtColor(img, cv.COLOR_RGB2YCrCb)
     img_gt = cv.imread("data/gt/vienna22.tif", -1)
 
     feat = []
-    cnt = 0
     print("entrou")
     for y in range(0, height, WINDOW_SIZE):
         for x in range(0, width, WINDOW_SIZE):
-            arr = img[y:y+WINDOW_SIZE, x:x+WINDOW_SIZE]
-            glcm = greycomatrix(arr, [1], [0], 256, symmetric=True, normed=True)
+            # arr = img[y:y+WINDOW_SIZE, x:x+WINDOW_SIZE]
+            arr_b = img[y:y+WINDOW_SIZE, x:x+WINDOW_SIZE, 0]
+            arr_g = img[y:y+WINDOW_SIZE, x:x+WINDOW_SIZE, 1]
+            arr_r = img[y:y+WINDOW_SIZE, x:x+WINDOW_SIZE, 2]
+            # arr = (arr_b + arr_g + arr_r)//3
+            # arr = arr.astype(np.uint8)
+            glcm_b = greycomatrix(arr_b, [1], [0], 256, symmetric=True, normed=True)
+            glcm_g = greycomatrix(arr_g, [1], [0], 256, symmetric=True, normed=True)
+            glcm_r = greycomatrix(arr_r, [1], [0], 256, symmetric=True, normed=True)
             for f in FEATURES:
-                feat.append(np.mean(greycoprops(glcm, f)))
-            cnt += 1
+                b = (greycoprops(glcm_b, f)[0,0])
+                g = (greycoprops(glcm_g, f)[0,0])
+                r = (greycoprops(glcm_r, f)[0,0])
+                feat.append((b+g+r)/3)
     
     print("saiu do for")
     feat = np.array(feat)
@@ -161,7 +167,7 @@ def main():
     print("IoU: %f"%(tp/(tp+fn+fp)))
     img_show = img_show.astype(np.uint8)
     cv.imwrite("prev_teste.tif", img_show)
-    print("\nThe program took %d minutes and %d seconds to finish the classification"%(abs(b.minute-a.minute), abs(b.second-a.second)))    
+    print("\nThe program took %d minutes and %d seconds to finish the classification"%(abs(b.minute-a.minute), abs(b.second-a.second)))
 
 if __name__ == '__main__':
     main()
