@@ -1,6 +1,7 @@
 import cv2 as cv
 import itertools
 import numpy as np
+import datetime
 import matplotlib.pyplot as plt
 
 from skimage.feature import greycomatrix, greycoprops
@@ -11,9 +12,20 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import confusion_matrix, f1_score
 from sklearn import svm
 
+
+WINDOW_SIZE = 50
+NUM_PIXELS_BUILD = 387999
+NUM_PIXELS_NOT_BUILD = 491909
+FEATURES = ['contrast', 'homogeneity', 'energy']
+
 # 32203917/3 p
 # 42796083/3 np
-
+# 32203917/387999 = 83
+# 42796083/491909 = 87
+# largura_altura(387999) (171, 2269)
+# largura_altura(387999*83) (4731, 6807)
+# (6501, 6583)
+# largura_altura(491909) (227, 2167)
 
 def largura_altura(pixels_predios):
     alt = int(pixels_predios ** 0.5)
@@ -26,6 +38,7 @@ def largura_altura(pixels_predios):
 def main():
     img = cv.imread("data/vienna16.tif", -1)
     img_gt = cv.imread("data/gt/vienna16.tif", -1)
+    a = datetime.datetime.now()
     height, width, channels = img.shape
     arr_p = []
     arr_np = []
@@ -44,54 +57,50 @@ def main():
                 arr_np.append(img[y, x, 2])
                 cnt_np += 3
 
-
-    alt_p, larg_p = largura_altura(cnt_p)
-    arr_p = np.array(arr_p, dtype = np.uint8)
-    arr_p = np.reshape(arr_p, (alt_p, larg_p))  
-
-    alt_np, larg_np = largura_altura(cnt_np)
-    arr_np = np.array(arr_np, dtype = np.uint8)
-    arr_np = np.reshape(arr_np, (alt_np, larg_np))
-    print(arr_p[:20])
-    print(arr_np[:20])
-
-    # cv.imwrite("predios.tif", arr_p)
-    # cv.imwrite("nao_predios.tif", arr_np)
+    alt_p, larg_p = largura_altura(NUM_PIXELS_BUILD)
+    alt_np, larg_np = largura_altura(NUM_PIXELS_NOT_BUILD)
     
-    features = ['contrast', 'homogeneity']
-    build = []
     n_build = []
-    build_feat = []
-    n_build_feat = []
-    glcm_p = greycomatrix(arr_p, [1,2,3,4], [0, np.pi/4, np.pi/2, 3*np.pi/4], 256, symmetric=True, normed=True)
-    # glcm_p = greycomatrix(arr_p, [1], [0], 256, symmetric=True, normed=True)
-    # glcm_np = greycomatrix(arr_p, [1], [0], 256, symmetric=True, normed=True)
-    glcm_np = greycomatrix(arr_np, [1,2,3,4], [0, np.pi/4, np.pi/2, 3*np.pi/4], 256, symmetric=True, normed=True)
-    for feat in features:
-        build.append(np.mean(greycoprops(glcm_p, feat)))
-        n_build.append(np.mean(greycoprops(glcm_np, feat)))
-        build_feat.append(build[:])
-        n_build_feat.append(n_build[:])
-        build.clear()
-        n_build.clear()
+    build = []
 
-    build_feat = np.transpose(np.asarray(build_feat))
-    n_build_feat = np.transpose(np.asarray(n_build_feat))
+    for i in range(1,84):
+        l = (i - 1)*NUM_PIXELS_BUILD
+        r = i*NUM_PIXELS_BUILD
+        aux_p = np.array(arr_p[l:r], dtype = np.uint8)
+        aux_p = np.reshape(aux_p, (alt_p, larg_p))
+        glcm_p = greycomatrix(aux_p, [1], [0], 256, symmetric=True, normed=True)
+        for feat in FEATURES:
+            build.append(np.mean(greycoprops(glcm_p, feat)))    
 
-    np.random.shuffle(build_feat)
-    np.random.shuffle(n_build_feat)
+    for i in range(1,88):
+        l = (i - 1)*NUM_PIXELS_NOT_BUILD
+        r = i*NUM_PIXELS_NOT_BUILD
+        aux_np = np.array(arr_np[l:r], dtype = np.uint8)
+        aux_np = np.reshape(aux_np, (alt_np, larg_np))
+        glcm_np = greycomatrix(aux_np, [1], [0], 256, symmetric=True, normed=True)
+        for feat in FEATURES:
+            n_build.append(np.mean(greycoprops(glcm_np, feat)))
 
-    build_feat = normalize(build_feat)
-    n_build_feat = normalize(n_build_feat)
-    print(build_feat.shape)
-    print(n_build_feat.shape)
+    build = np.array(build)
+    n_build = np.array(n_build)
+
+    # np.random.shuffle(build)
+    # np.random.shuffle(n_build)
+
+    # build = normalize(build)
+    # n_build = normalize(n_build)
+    print(build.shape)
+    print(n_build.shape)
     
-    knn = KNeighborsClassifier(algorithm='auto', leaf_size=30, metric='minkowski', metric_params=None, n_jobs=-1, n_neighbors=1, p=2, weights='uniform')
-    X_train = np.append(build_feat, n_build_feat)
-    X_train = np.reshape(X_train, (X_train.shape[0]//len(features), len(features)))
+    knn = KNeighborsClassifier(algorithm='auto', leaf_size=30, metric='minkowski', metric_params=None, 
+        n_jobs=-1, n_neighbors=5, p=2, weights='uniform')
+    X_train = np.append(build, n_build)
+    X_train = np.reshape(X_train, (X_train.shape[0]//len(FEATURES), len(FEATURES)))
     print(X_train)
     print(X_train.shape)
-    knn.fit( X_train, np.repeat(np.arange(2),1) )
+    Y_train = np.zeros((170), dtype = np.int)
+    Y_train[84:170] = 1
+    knn.fit(X_train, Y_train)
 
     ################
     # IMAGEM FINAL #
@@ -100,22 +109,24 @@ def main():
     img_gt = cv.imread("data/gt/vienna22.tif", -1)
 
     feat = []
-    features = ['contrast', 'homogeneity']
     cnt = 0
     print("entrou")
-    for y in range(0, height, 25):
-        for x in range(0, width, 25):
-            arr = img[y:y+25, x:x+25]
-            glcm = greycomatrix(arr, [1,2,3,4], [0, np.pi/4, np.pi/2, 3*np.pi/4], 256, symmetric=True, normed=True)
-            for f in features:
+    for y in range(0, height, WINDOW_SIZE):
+        for x in range(0, width, WINDOW_SIZE):
+            arr = img[y:y+WINDOW_SIZE, x:x+WINDOW_SIZE]
+            glcm = greycomatrix(arr, [1], [0], 256, symmetric=True, normed=True)
+            for f in FEATURES:
                 feat.append(np.mean(greycoprops(glcm, f)))
             cnt += 1
     
     print("saiu do for")
     feat = np.array(feat)
-    feat = feat.reshape(cnt, 2)
-    feat = normalize(feat)
+    feat = feat.reshape(cnt, len(FEATURES))
+    # np.random.shuffle(feat)
+    # feat = normalize(feat)
     label = knn.predict(feat)
+    print("label: ")
+    print(label)
     img_show = np.copy(img_gt)
     hit = 0
     cnt = 0
@@ -124,14 +135,14 @@ def main():
     fn = 0
     cnt = 0
     print("entrou no ultimo")
-    for y in range(0, height, 25):
-        for x in range(0, width, 25):
+    for y in range(0, height, WINDOW_SIZE):
+        for x in range(0, width, WINDOW_SIZE):
             if(label[cnt] == 1):
-                img_show[y:y+25, x:x+25] = 0
+                img_show[y:y+WINDOW_SIZE, x:x+WINDOW_SIZE] = 0
             else:
-                img_show[y:y+25, x:x+25] = 255
-            for h in range(y, y+25):
-                for w in range(x, x+25):
+                img_show[y:y+WINDOW_SIZE, x:x+WINDOW_SIZE] = 255
+            for h in range(y, y+WINDOW_SIZE):
+                for w in range(x, x+WINDOW_SIZE):
                     if(img_gt[h, w] == 255):
                         if(label[cnt] == 0): # É prédio e o knn previu como prédio
                             hit += 1
@@ -139,16 +150,18 @@ def main():
                         else: # Incorretamente previu que não é um prédio
                             fn += 1
                     else:
-                        if(label[cnt] == 0): # Incorretamente previu que é um prédio
+                        if(label[cnt] == 0): # Incorretamenpte previu que é um prédio
                             fp += 1
                         else: # Não é prédio e previu que não é prédio mesmo
                             hit += 1
             cnt += 1
 
+    b = datetime.datetime.now()    
     print("Accuracy: %f"%(hit/(height*width)))
     print("IoU: %f"%(tp/(tp+fn+fp)))
     img_show = img_show.astype(np.uint8)
     cv.imwrite("prev_teste.tif", img_show)
+    print("\nThe program took %d minutes and %d seconds to finish the classification"%(abs(b.minute-a.minute), abs(b.second-a.second)))    
 
 if __name__ == '__main__':
     main()
