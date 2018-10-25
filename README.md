@@ -21,12 +21,18 @@
 ## Uso
 - A partir do diretório raiz rodar com configurações padrão:
 	```bash
-	python ./src/pd3.py --r[número do requisito]
+	python ./src/pd4.py --r2
 	```
--  [número do requisito] corresponde a 1 ou 2 dependendo da técnica a ser testada.
+- Para executar o requisito 2!
+- Para executar o requisito 1 basta executar o arquivo glcm_sklearn.py normalmente
 - [Repositório do github](https://github.com/peluz/cv-foundations-4)
 - Requisito 1:
-	- PREENCHER
+	- Caso queira alterar o tamanho da janela e/ou as features, basta mudar as constantes declaradas.
+	- NUM_PIXELS_BUILD denota o número de valores de pixels de prédios contidos em cada uma das 83 matrizes de tamanho  171x2269 geradas.
+	- NUM_PIXELS_NOT_BUILD denota o número de valores de pixels de não prédios contidos em cada uma das 87 matrizes de tamanho (227, 2167) geradas.
+	- 32203917/3 é o número total de pixels de prédios na imagem de treino e 42796083/3 a quantidade dos outros pixels. A divisão por 3 se deve ao fato de que pra cada pixel da imagem temos os 3 valores de intensidade associados (rgb).
+	- A função largura_altura(pixels) funciona de tal forma que ela retorna a altura A e a largura L de modo que A*L é exatamente igual a pixels (A e L vão ser inteiros) e a diferença L-A é a menor possível. 
+	- Note que os algoritmos sklearn tem o mesmo "padrão" para os métodos. Logo, outros métodos podem ser testados, além do KNN escolhido.
 - Requisito 2:
 	- Flags de uso:
 		- --imageSize tamanho das subimagens que o modelo obterá da imagem de treinamento original, pode ser 100, 200 ou 250.

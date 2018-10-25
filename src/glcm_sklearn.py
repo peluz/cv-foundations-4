@@ -32,8 +32,8 @@ def largura_altura(pixels_predios):
     return alt, pixels_predios // alt
 
 def main():
-    img = cv.imread("data/vienna16.tif", -1)
-    img_gt = cv.imread("data/gt/vienna16.tif", -1)
+    img = cv.imread("../data/vienna16.tif", -1)
+    img_gt = cv.imread("../data/gt/vienna16.tif", -1)
     # img = cv.cvtColor(img, cv.COLOR_RGB2YCrCb)
     a = datetime.datetime.now()
     height, width, channels = img.shape
@@ -102,11 +102,12 @@ def main():
     ################
     # IMAGEM FINAL #
     ################
-    img = cv.imread("data/vienna22.tif", -1)
+    img = cv.imread("../data/vienna22.tif", -1)
     # img = cv.cvtColor(img, cv.COLOR_RGB2YCrCb)
-    img_gt = cv.imread("data/gt/vienna22.tif", -1)
+    img_gt = cv.imread("../data/gt/vienna22.tif", -1)
 
     feat = []
+    cnt = 0
     print("entrou")
     for y in range(0, height, WINDOW_SIZE):
         for x in range(0, width, WINDOW_SIZE):
@@ -124,6 +125,7 @@ def main():
                 g = (greycoprops(glcm_g, f)[0,0])
                 r = (greycoprops(glcm_r, f)[0,0])
                 feat.append((b+g+r)/3)
+            cnt += 1
     
     print("saiu do for")
     feat = np.array(feat)
