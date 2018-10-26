@@ -4,6 +4,7 @@ from utils import load_dataset, load, form_mask
 from glcm_sklearn import *
 import matplotlib.pyplot as plt
 import cv2
+import gclm_sklearn
 
 parser = argparse.ArgumentParser(
     description="Image Segmentation")
@@ -31,7 +32,7 @@ def main(r1, r2, train_model, image_size,
          batch_size, freeze, pretrained, model):
     X_train, Y_train, X_dev, Y_dev, X_test, Y_test = load_dataset(image_size)
     if r1:
-        pass
+        gclm_sklearn.main()
     elif r2:
         if train_model:
             train(X_train, Y_train, X_dev, Y_dev, batch_size=batch_size,

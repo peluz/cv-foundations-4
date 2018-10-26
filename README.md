@@ -21,10 +21,8 @@
 ## Uso
 - A partir do diretório raiz rodar com configurações padrão:
 	```bash
-	python ./src/pd4.py --r2
+	python ./src/pd4.py --[r1 ou r2]
 	```
-- Para executar o requisito 2!
-- Para executar o requisito 1 basta executar o arquivo glcm_sklearn.py normalmente
 - [Repositório do github](https://github.com/peluz/cv-foundations-4)
 - Requisito 1:
 	- Caso queira alterar o tamanho da janela e/ou as features, basta mudar as constantes declaradas.
