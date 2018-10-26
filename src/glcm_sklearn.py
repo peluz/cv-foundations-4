@@ -7,6 +7,7 @@ from skimage.feature import greycomatrix, greycoprops
 from sklearn.preprocessing import normalize
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
+from utils import *
 
 
 WINDOW_SIZE = 50
@@ -32,8 +33,8 @@ def largura_altura(pixels_predios):
     return alt, pixels_predios // alt
 
 def main():
-    img = cv.imread("../data/vienna16.tif", -1)
-    img_gt = cv.imread("../data/gt/vienna16.tif", -1)
+    img = cv.imread(TRAIN_IMAGE_PATH, -1)
+    img_gt = cv.imread(TRAIN_LABEL_PATH, -1)
     # img = cv.cvtColor(img, cv.COLOR_RGB2YCrCb)
     a = datetime.datetime.now()
     height, width, channels = img.shape
@@ -102,9 +103,9 @@ def main():
     ################
     # IMAGEM FINAL #
     ################
-    img = cv.imread("../data/vienna22.tif", -1)
+    img = cv.imread(TEST_IMAGE_PATH, -1)
     # img = cv.cvtColor(img, cv.COLOR_RGB2YCrCb)
-    img_gt = cv.imread("../data/gt/vienna22.tif", -1)
+    img_gt = cv.imread(TEST_LABEL_PATH, -1)
 
     feat = []
     cnt = 0
